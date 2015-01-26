@@ -1,4 +1,5 @@
-(ns xrosslexior.core)
+(ns xrosslexior.core
+  (:require [xrosslexior.letter-tree :refer :all]))
 
 (defn string-to-sequence [word]
   (map #(keyword (clojure.string/upper-case (str %))) word))
