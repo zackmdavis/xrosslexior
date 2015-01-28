@@ -18,3 +18,11 @@
   (let [letter-tree (letter-tree-builder nil restricted-dictionary)]
     (is (= (set (map #(:letter %) (:children letter-tree)))
            #{:C :R :S}))))
+
+(deftest test-letter-tree-search
+  (let [letter-tree (build-letter-tree restricted-dictionary)]
+    (is (letter-tree-search letter-tree []))             ; empty
+    (is (letter-tree-search letter-tree [:C :A :R]))     ; entire word
+    (is (letter-tree-search letter-tree [:C :O :M :P]))  ; partial word
+    (is (not (letter-tree-search letter-tree [:X])))     ; fail fast
+    (is (not (letter-tree-search letter-tree [:C :O :M :P :A :X]))))) ; fail
