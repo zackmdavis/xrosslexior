@@ -11,15 +11,23 @@
                 (slurp "/usr/share/dict/words")))))
 
 (defn compile-n-dictionary [n]
-  (filter #(= (count %) n) our-dictionary))
+  (set (filter #(= (count %) n) our-dictionary)))
 (def n-dictionary (memoize compile-n-dictionary))
+
+(defn compile-n-prefix-tree [n]
+  (build-letter-tree (n-dictionary n)))
+(def n-prefix-tree (memoize compile-n-prefix-tree))
 
 (defn prefix? [word letters]
   (= letters (subvec (vec word) 0 (count letters))))
 
 (defn valid-prefix? [dictionary letters]
-  (let [prefix (take-while #(not (nil? %)) letters)]
-    (some #(prefix? % prefix) dictionary)))
+  ;; XXX: really contrived means
+  (let [true-letters (filter identity letters)]
+    (letter-tree-search
+     ;; ... to keep the same argument signature
+     (n-prefix-tree (count (first dictionary)))
+     true-letters)))
 
 (defn empty-grid [m n]
   (vec (for [row (range m)]

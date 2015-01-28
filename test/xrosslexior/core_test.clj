@@ -12,6 +12,11 @@
     (is (prefix? [:S :C :O :N :E] prefix)))
   (is (not (prefix? [:S :C :O :N :E] [:C :O]))))
 
+(deftest test-valid-prefix-detection
+  (is (valid-prefix? (n-dictionary 3) [:C :A]))
+  (is (valid-prefix? (n-dictionary 3) [:C :A :T]))
+  (is (valid-prefix? (n-dictionary 4) [:R :A :T])))
+
 (deftest test-solution-detection
   (is (time (solved? [[:B :A :T :E]
                       [:A :B :E :L]
