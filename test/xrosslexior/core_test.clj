@@ -21,3 +21,8 @@
   (is (time (solved? [[:B :A :T :E]
                       [:A :B :E :L]
                       [:N :E :A :L]]))))
+
+(deftest test-fullness-detection
+  (is (not (full? [[nil nil] [nil nil]])))
+  (is (not (full? [[:A :B] [:C nil]])))
+  (is (full? [[:A :B] [:C :D]])))

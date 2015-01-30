@@ -28,7 +28,7 @@
 
 (defn letter-tree-search [tree query]
   (if (empty? query)
-    true
+    tree
     (let [seeking (first query)
           retrieved ((:children tree) seeking)]
       (if retrieved

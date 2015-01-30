@@ -1,5 +1,6 @@
 (ns xrosslexior.core
-  (:require [xrosslexior.letter-tree :refer :all]))
+  (:require [xrosslexior.letter-tree :refer :all]
+            [clojure.math.combinatorics :refer [cartesian-product]]))
 
 (defn string-to-sequence [word]
   (map #(keyword (clojure.string/upper-case (str %))) word))
@@ -91,3 +92,26 @@
         (some identity
               (for [word (n-dictionary (count (read-row grid next-row-index)))]
                 (solve (write-row grid next-row-index word))))))))
+
+
+(defn full? [grid]
+  (every? #(every? (comp not nil?) %) grid))
+
+(defn prefix-admissibles [grid]
+  ;; we're assuming square grids for now
+  (let [prefixes (map #(filter identity %) (for [j (range (count grid))]
+                                             (read-col grid j)))
+        trees (map #(letter-tree-search (n-prefix-tree (count grid)) %)
+                   prefixes)
+        spot-admissibles (map #(keys (:children %)) trees)]
+    (apply cartesian-product spot-admissibles)))
+
+(defn admissibles [grid]
+  (filter (n-dictionary (count grid)) (prefix-admissibles grid)))
+
+(defn solve-it [grid]
+  (if (full? grid)
+    grid
+    (some identity
+          (for [word (admissibles grid)]
+            (solve (write-row grid (first-blank-row-index grid) word))))))
