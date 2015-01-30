@@ -16,7 +16,7 @@
 
 (deftest test-letter-tree-builder
   (let [letter-tree (letter-tree-builder nil restricted-dictionary)]
-    (is (= (set (map #(:letter %) (:children letter-tree)))
+    (is (= (set (map #(:letter %) (vals (:children letter-tree))))
            #{:C :R :S}))))
 
 (deftest test-letter-tree-search
