@@ -34,6 +34,9 @@
   (vec (for [row (range m)]
     (vec (for [col (range n)] nil)))))
 
+(defn empty-square-grid [n]
+  (empty-grid n n))
+
 (defn lookup [grid coordinates]
   ((grid (first coordinates)) (second coordinates)))
 
