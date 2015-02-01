@@ -146,3 +146,27 @@
     (doseq [row puzzle]
       (println (formatter (map #(if ((complement nil?) %) (name %) " ")
                                row))))))
+
+(defn clear-across-length [puzzle [row start-col]]
+  (let [clear-span (take-while #(not= :█ %)
+                               (drop start-col (read-row puzzle row)))]
+    (count clear-span)))
+
+(defn wordspan-addresses-across [puzzle]
+  (apply
+   concat
+   (for [[row-index row] (enumerate (rows puzzle))
+         :let [partitioned (partition-by #(not= :█ %) row)]]
+     ((reduce (fn [{:keys [addresses col-counter] :as reductor} partition]
+                (if (= (first partition) :█)
+                  (assoc reductor
+                         :col-counter (+ col-counter (count partition)))
+                  (let [new-address (->WordspanAddress [row-index col-counter]
+                                                       :across
+                                                       (count partition))]
+                    (assoc reductor
+                           :addresses (conj addresses new-address)
+                           :col-counter (+ col-counter (count partition))))))
+              {:addresses [] :col-counter 0}
+              partitioned)
+      :addresses))))

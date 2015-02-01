@@ -3,6 +3,9 @@
 (defmacro map-comprehension [bindings map-entry]
   `(into {} (for ~bindings ~map-entry)))
 
+(defn enumerate [sequence]
+  (map-indexed vector sequence))
+
 (defn zip [& seqs]
   (apply map vector seqs))
 
