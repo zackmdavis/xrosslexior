@@ -12,6 +12,43 @@
     (is (prefix? [:S :C :O :N :E] prefix)))
   (is (not (prefix? [:S :C :O :N :E] [:C :O]))))
 
+(def my-sample-puzzle
+  [[:A :B :C :█]
+   [:D :E :F :█]
+   [:█ :G :H :█]
+   [:I :J :K :L]
+   [:█ :█ :M :N]])
+
+(deftest test-comprising-squares
+  (is (= (comprising-squares (->WordspanAddress [0 0] :across 3))
+         [[0 0] [0 1] [0 2]]))
+  (is (= (comprising-squares (->WordspanAddress [0 0] :down 3))
+         [[0 0] [1 0] [2 0]])))
+
+(deftest test-wordspan-readability
+  (is (= (read-wordspan my-sample-puzzle (->WordspanAddress [0 0] :across 3))
+         [:A :B :C]))
+  (is (= (read-wordspan my-sample-puzzle (->WordspanAddress [0 1] :down 4))
+         [:B :E :G :J])))
+
+(deftest test-square-writability
+  (is (= (write-square (write-square my-sample-puzzle 0 0 :X) 1 1 :Y)
+         [[:X :B :C :█]
+          [:D :Y :F :█]
+          [:█ :G :H :█]
+          [:I :J :K :L]
+          [:█ :█ :M :N]])))
+
+(deftest test-wordspan-writability
+  (is (= (write-wordspan my-sample-puzzle
+                         (->WordspanAddress [0 0] :across 3)
+                         [:X :Y :Z])
+         [[:X :Y :Z :█]
+          [:D :E :F :█]
+          [:█ :G :H :█]
+          [:I :J :K :L]
+          [:█ :█ :M :N]])))
+
 (deftest test-solution-detection
   (is (solved? [[:L :I :S :P]
                 [:A :L :O :E]

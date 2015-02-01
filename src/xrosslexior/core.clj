@@ -1,11 +1,12 @@
 (ns xrosslexior.core
   (:require [xrosslexior.letter-tree :refer :all]
+            [xrosslexior.utils :refer :all]
             [clojure.math.combinatorics :refer [cartesian-product]]))
 
 (defn string-to-sequence [word]
   (map #(keyword (clojure.string/upper-case (str %))) word))
 
-(def black-square :█)
+(def black-square :█)  ; easy to type/complete at REPL
 
 (def our-dictionary
   (map string-to-sequence
@@ -53,6 +54,9 @@
           grid
           (range (count word))))
 
+(defn write-square [puzzle row col occupant]
+  (assoc puzzle row (assoc (read-row puzzle row) col occupant)))
+
 (defn rows [grid]
   (lazy-seq grid))
 
@@ -62,6 +66,37 @@
 
 (defn spans [grid]
   (concat (rows grid) (cols grid)))
+
+(defrecord WordspanAddress [start orientation length])
+
+(defn offset [location displacement]
+  (vec (map + location displacement)))
+
+(defn comprising-squares [address]
+  (let [step (condp = (:orientation address)
+               :across [0 1]
+               :down [1 0])]
+    (map #(offset (:start address) (map (fn [x] (* % x)) step))
+         (range (:length address)))))
+
+(defn read-wordspan [puzzle adresss]
+  (let [{:keys [start orientation length]} adresss
+        [start-row start-col] start]
+    (condp = orientation
+      :across (subvec (read-row puzzle start-row)
+                      start-col (+ start-col length))
+      :down (subvec (read-col puzzle start-col)
+                    start-row (+ start-row length)))))
+
+(defn write-wordspan [puzzle address word]
+  (let [{:keys [start orientation length]} address
+        [start-row start-col] start]
+    (reduce (fn [state [square-to-write letter-to-write]]
+              (let [[row col] square-to-write]
+                (write-square state row col letter-to-write)))
+            puzzle
+            (for [[square letter] (zip (comprising-squares address) word)]
+              [square letter]))))
 
 (defn solved? [grid]
   (every? identity
@@ -109,4 +144,5 @@
 (defn display-puzzle [puzzle & condensed?]
   (let [formatter (if condensed? clojure.string/join vec)]
     (doseq [row puzzle]
-      (println (formatter (map name row))))))
+      (println (formatter (map #(if ((complement nil?) %) (name %) " ")
+                               row))))))
