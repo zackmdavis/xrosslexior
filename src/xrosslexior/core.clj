@@ -85,7 +85,7 @@
 (defn already-placed [grid]
    (set (filter full-span? (spans grid))))
 
-(defn prefix-admissibles [grid]
+(defn grid-prefix-admissibles [grid]
   (let [cols (for [j (range (count (first grid)))]
                (read-col grid j))
         prefixes (map #(filter identity %) cols)
@@ -94,18 +94,19 @@
         spot-admissibles (map #(keys (:children %)) trees)]
     (apply cartesian-product spot-admissibles)))
 
-(defn admissibles [grid]
+(defn grid-admissibles [grid]
   (filter #(and ((n-dictionary (count (first grid))) %)
                 (not ((already-placed grid) %)))
-          (prefix-admissibles grid)))
+          (grid-prefix-admissibles grid)))
 
-(defn solve [grid]
+(defn solve-grid [grid]
   (if (full? grid)
     grid
     (some identity
-          (for [word (admissibles grid)]
-            (solve (write-row grid (first-blank-row-index grid) word))))))
+          (for [word (grid-admissibles grid)]
+            (solve-grid (write-row grid (first-blank-row-index grid) word))))))
 
-(defn display-grid [grid]
-  (doseq [row grid]
-    (println (vec (map name row)))))
+(defn display-puzzle [puzzle & condensed?]
+  (let [formatter (if condensed? clojure.string/join vec)]
+    (doseq [row puzzle]
+      (println (formatter (map name row))))))
