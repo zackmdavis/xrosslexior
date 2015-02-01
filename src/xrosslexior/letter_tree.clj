@@ -1,4 +1,5 @@
-(ns xrosslexior.letter-tree)
+(ns xrosslexior.letter-tree
+  (:require [xrosslexior.utils :refer :all]))
 
 (defrecord LetterTreeNode [letter children])
 
@@ -11,17 +12,17 @@
 (def alphabet (map (comp keyword str char) (concat (range 65 91))))
 
 (defn partition-by-initial [words]
-  (into {}
-        (filter #(seq (second %))
-                (for [letter alphabet]
-                  [letter (filter #(= letter (first %)) words)]))))
+  (map-comprehension [letter alphabet
+                      :let [words-starting-with (filter #(= letter (first %))
+                                                        words)]
+                      :when (seq words-starting-with)]
+    [letter words-starting-with]))
 
 (defn letter-tree-builder [letter postfixes]
   (->LetterTreeNode
    letter
-   (into {}
-         (for [[i postfix-group] (partition-by-initial postfixes)]
-           [i (letter-tree-builder i (map rest postfix-group))]))))
+   (map-comprehension [[i postfix-group] (partition-by-initial postfixes)]
+     [i (letter-tree-builder i (map rest postfix-group))])))
 
 (defn build-letter-tree [words]
   (letter-tree-builder nil words))
