@@ -51,14 +51,20 @@
           grid
           (range (count word))))
 
+(defn rows [grid]
+  (lazy-seq grid))
+
+(defn cols [grid]
+  (for [j (range (count (first grid)))]
+               (read-col grid j)))
+
+(defn spans [grid]
+  (concat (rows grid) (cols grid)))
+
 (defn solved? [grid]
-  (let [width (count (read-row grid 0))
-        height (count (read-col grid 0))]
-    (every? identity
-            (concat (for [i (range height)]
-                      (some #{(read-row grid i)} (n-dictionary width)))
-                    (for [j (range width)]
-                      (some #{(read-col grid j)} (n-dictionary height)))))))
+  (every? identity
+          (for [span (spans grid)]
+            (some #{span} (n-dictionary (count span))))))
 
 (defn first-blank-row-index [grid]
   (some identity
@@ -72,16 +78,16 @@
   (every? #(every? (comp not nil?) %) grid))
 
 (defn prefix-admissibles [grid]
-  ;; we're assuming square grids for now
-  (let [prefixes (map #(filter identity %) (for [j (range (count grid))]
-                                             (read-col grid j)))
-        trees (map #(letter-tree-search (n-prefix-tree (count grid)) %)
-                   prefixes)
+  (let [cols (for [j (range (count (first grid)))]
+               (read-col grid j))
+        prefixes (map #(filter identity %) cols)
+        trees (map #(letter-tree-search (n-prefix-tree (count %1)) %2)
+                   cols prefixes)
         spot-admissibles (map #(keys (:children %)) trees)]
     (apply cartesian-product spot-admissibles)))
 
 (defn admissibles [grid]
-  (filter (n-dictionary (count grid)) (prefix-admissibles grid)))
+  (filter (n-dictionary (count (first grid))) (prefix-admissibles grid)))
 
 (defn solve [grid]
   (if (full? grid)

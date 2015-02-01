@@ -13,9 +13,14 @@
   (is (not (prefix? [:S :C :O :N :E] [:C :O]))))
 
 (deftest test-solution-detection
-  (is (time (solved? [[:B :A :T :E]
-                      [:A :B :E :L]
-                      [:N :E :A :L]]))))
+  (is (solved? [[:L :I :S :P]
+                [:A :L :O :E]
+                [:S :K :Y :E]
+                [:T :S :A :R]]))
+  (is (solved? [[:G :H :O :S :T]
+                [:L :A :M :A :R]
+                [:A :L :A :N :A]
+                [:D :O :R :K :Y]])))
 
 (deftest test-fullness-detection
   (is (not (full? [[nil nil] [nil nil]])))
