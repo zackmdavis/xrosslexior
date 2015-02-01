@@ -22,6 +22,12 @@
                 [:A :L :A :N :A]
                 [:D :O :R :K :Y]])))
 
+(deftest test-already-placed
+  (is (= (already-placed [[:C :A :T]
+                          [:O nil nil]
+                          [:D nil nil]])
+         #{[:C :A :T] [:C :O :D]})))
+
 (deftest test-fullness-detection
   (is (not (full? [[nil nil] [nil nil]])))
   (is (not (full? [[:A :B] [:C nil]])))

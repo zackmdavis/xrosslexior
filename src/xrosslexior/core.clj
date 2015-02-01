@@ -5,6 +5,8 @@
 (defn string-to-sequence [word]
   (map #(keyword (clojure.string/upper-case (str %))) word))
 
+(def black-square :█)
+
 (def our-dictionary
   (map string-to-sequence
        (filter (fn [word] (not (.contains word "'")))
@@ -74,8 +76,14 @@
                          nil))
                      grid)))
 
+(defn full-span? [span]
+  (every? (complement nil?) span))
+
 (defn full? [grid]
-  (every? #(every? (comp not nil?) %) grid))
+  (every? #(full-span? %) grid))
+
+(defn already-placed [grid]
+   (set (filter full-span? (spans grid))))
 
 (defn prefix-admissibles [grid]
   (let [cols (for [j (range (count (first grid)))]
@@ -87,7 +95,9 @@
     (apply cartesian-product spot-admissibles)))
 
 (defn admissibles [grid]
-  (filter (n-dictionary (count (first grid))) (prefix-admissibles grid)))
+  (filter #(and ((n-dictionary (count (first grid))) %)
+                (not ((already-placed grid) %)))
+          (prefix-admissibles grid)))
 
 (defn solve [grid]
   (if (full? grid)
