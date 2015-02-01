@@ -22,14 +22,6 @@
 (defn prefix? [word letters]
   (= letters (subvec (vec word) 0 (count letters))))
 
-(defn valid-prefix? [dictionary letters]
-  ;; XXX: really contrived means
-  (let [true-letters (filter identity letters)]
-    (letter-tree-search
-     ;; ... to keep the same argument signature
-     (n-prefix-tree (count (first dictionary)))
-     true-letters)))
-
 (defn empty-grid [m n]
   (vec (for [row (range m)]
     (vec (for [col (range n)] nil)))))
@@ -68,17 +60,6 @@
                     (for [j (range width)]
                       (some #{(read-col grid j)} (n-dictionary height)))))))
 
-(defn solvable? [grid]
-  (let [width (count (read-row grid 0))
-        height (count (read-col grid 0))]
-    (every? identity
-            (concat (for [i (range height)]
-                      (valid-prefix? (n-dictionary width)
-                                     (read-row grid i)))
-                    (for [j (range width)]
-                      (valid-prefix? (n-dictionary height)
-                                     (read-col grid j)))))))
-
 (defn first-blank-row-index [grid]
   (some identity
         (map-indexed (fn [index row]
@@ -86,16 +67,6 @@
                          index
                          nil))
                      grid)))
-
-(defn solve [grid]
-  (if (solved? grid)
-    grid
-    (when (solvable? grid)
-      (let [next-row-index (first-blank-row-index grid)]
-        (some identity
-              (for [word (n-dictionary (count (read-row grid next-row-index)))]
-                (solve (write-row grid next-row-index word))))))))
-
 
 (defn full? [grid]
   (every? #(every? (comp not nil?) %) grid))
@@ -112,9 +83,13 @@
 (defn admissibles [grid]
   (filter (n-dictionary (count grid)) (prefix-admissibles grid)))
 
-(defn solve-it [grid]
+(defn solve [grid]
   (if (full? grid)
     grid
     (some identity
           (for [word (admissibles grid)]
-            (solve-it (write-row grid (first-blank-row-index grid) word))))))
+            (solve (write-row grid (first-blank-row-index grid) word))))))
+
+(defn display-grid [grid]
+  (doseq [row grid]
+    (println (vec (map name row)))))
