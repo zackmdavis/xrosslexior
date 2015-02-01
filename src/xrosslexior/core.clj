@@ -117,4 +117,4 @@
     grid
     (some identity
           (for [word (admissibles grid)]
-            (solve (write-row grid (first-blank-row-index grid) word))))))
+            (solve-it (write-row grid (first-blank-row-index grid) word))))))
