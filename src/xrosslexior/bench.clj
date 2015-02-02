@@ -35,7 +35,7 @@
 (defn convenient-experiment [n size]
   (let [start (rand-int 300)
         words (take size (drop start (n-dictionary n)))
-        results (map-comprehension [[name solver] [[:std solve]]]
+        results (map-comprehension [[name solver] [[:std solve-grid]]]
                   [name (benchmark-first-row-words solver words)])
         summary (map-comprehension [[solver-name result] results]
                   [solver-name (summarize-benchmark result)])]
