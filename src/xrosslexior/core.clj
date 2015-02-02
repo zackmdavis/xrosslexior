@@ -1,5 +1,6 @@
 (ns xrosslexior.core
   (:require [xrosslexior.letter-tree :refer :all]
+            [xrosslexior.patterns :refer :all]
             [xrosslexior.utils :refer :all]
             [clojure.math.combinatorics :refer [cartesian-product]]))
 
@@ -229,7 +230,10 @@
   (filter (n-dictionary (:length across-address))
           (down-prefix-admissibles puzzle across-address)))
 
-(defn solve-puzzle [puzzle]
+(defn solve-puzzle [puzzle & spy]
+  (when (seq spy)
+    (println "spying ...")
+    (display-puzzle puzzle))
   (if (full? puzzle)
     puzzle
     (let [next-across-address (first-blank-across-address puzzle)]
