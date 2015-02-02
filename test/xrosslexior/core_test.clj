@@ -49,6 +49,14 @@
           [:I :J :K :L]
           [:█ :█ :M :N]])))
 
+(deftest test-containing-address-down
+  (is (= (containing-address-down my-sample-puzzle [3 1])
+         (->WordspanAddress [0 1] :down 4)))
+  (is (= (containing-address-down my-sample-puzzle [4 3])
+         (->WordspanAddress [3 3] :down 2)))
+  (is (= (containing-address-down my-sample-puzzle [3 0])
+         (->WordspanAddress [3 0] :down 1))))
+
 (deftest test-solution-detection
   (is (solved? [[:L :I :S :P]
                 [:A :L :O :E]

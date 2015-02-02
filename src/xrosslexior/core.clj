@@ -147,9 +147,15 @@
       (println (formatter (map #(if ((complement nil?) %) (name %) " ")
                                row))))))
 
+;; XXX TODO: unify these
 (defn clear-across-length [puzzle [row start-col]]
   (let [clear-span (take-while #(not= :█ %)
                                (drop start-col (read-row puzzle row)))]
+    (count clear-span)))
+
+(defn clear-down-length [puzzle [start-row col]]
+  (let [clear-span (take-while #(not= :█ %)
+                               (drop start-row (read-col puzzle col)))]
     (count clear-span)))
 
 (defn wordspan-addresses-across [puzzle]
@@ -170,3 +176,30 @@
               {:addresses [] :col-counter 0}
               partitioned)
       :addresses))))
+
+;; XXX utterly contemptible in its surely unnecessary complexity,
+;; perhaps not implausibly the worst function I have ever written
+(defn containing-address-down [puzzle [row-i col-j]]
+  (let [col (read-col puzzle col-j)
+        partitioned (partition-by #(not= :█ %) col)
+        count-reductor
+        (reductions (fn [{:keys [addresses row-counter] :as reductor} partn]
+                      (if (= (first partn) :█)
+                        (assoc reductor
+                               :addresses (conj addresses nil)
+                               :row-counter (+ row-counter (count partn)))
+                        (let
+                            [new-address (->WordspanAddress [row-counter col-j]
+                                                            :down
+                                                            (count partn))]
+                          (assoc reductor
+                                 :addresses (conj addresses new-address)
+                                 :row-counter (+ row-counter (count partn))))))
+                      {:addresses [] :row-counter 0}
+                      partitioned)]
+    (last ((first (filter #(and (not (nil? (last (% :addresses))))
+                                (and (<= (first (:start (last (% :addresses))))
+                                         row-i)
+                              (< row-i (% :row-counter))))
+                          count-reductor))
+           :addresses))))
