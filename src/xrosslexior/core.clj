@@ -203,3 +203,34 @@
                               (< row-i (% :row-counter))))
                           count-reductor))
            :addresses))))
+
+(defn first-blank-across-address [puzzle]
+  (first (filter #((complement nil?) (read-wordspan puzzle %))
+                 (wordspan-addresses-across puzzle))))
+
+(defn down-addresses-athwart-across [puzzle across-address]
+  (let [squares-traversed (comprising-squares across-address)]
+    (map #(containing-address-down puzzle %) squares-traversed)))
+
+(defn down-prefix-admissibles [puzzle across-address]
+  (let [down-addresses (down-addresses-athwart-across puzzle across-address)
+        down-wordspans (map #(read-wordspan puzzle %) down-addresses)
+        prefixes (map #(filter identity %) down-wordspans)
+        trees (map #(letter-tree-search (n-prefix-tree (:length %1)) %2)
+                   down-addresses prefixes)
+        spot-admissibles (map #(keys (:children %)) trees)]
+    (apply cartesian-product spot-admissibles)))
+
+(defn admissibles [puzzle across-address]
+  (filter (n-dictionary (:length across-address))
+          (down-prefix-admissibles puzzle across-address)))
+
+(defn solve-puzzle [puzzle]
+  (if (full? puzzle)
+    puzzle
+    (let [next-across-address (first-blank-across-address puzzle)]
+      (some identity
+            (for [word (admissibles puzzle next-across-address)]
+              (solve-puzzle (write-wordspan puzzle
+                                            next-across-address
+                                            word)))))))

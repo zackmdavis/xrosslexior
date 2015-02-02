@@ -57,6 +57,13 @@
   (is (= (containing-address-down my-sample-puzzle [3 0])
          (->WordspanAddress [3 0] :down 1))))
 
+(deftest test-down-addresses-athwart-across
+  (is (= (down-addresses-athwart-across my-sample-puzzle
+                                        (->WordspanAddress [3 0] :across 4))
+         (map #(apply ->WordspanAddress %)
+              [[[3 0] :down 1] [[0 1] :down 4]
+               [[0 2] :down 5] [[3 3] :down 2]]))))
+
 (deftest test-solution-detection
   (is (solved? [[:L :I :S :P]
                 [:A :L :O :E]
