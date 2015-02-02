@@ -204,9 +204,13 @@
                           count-reductor))
            :addresses))))
 
+(defn blank-address? [puzzle addresss]
+  (let [wordspan (read-wordspan puzzle addresss)]
+    (every? nil? wordspan)))
+
 (defn first-blank-across-address [puzzle]
-  (first (filter #((complement nil?) (read-wordspan puzzle %))
-                 (wordspan-addresses-across puzzle))))
+  (first (filter #(blank-address? puzzle %)
+          (wordspan-addresses-across puzzle))))
 
 (defn down-addresses-athwart-across [puzzle across-address]
   (let [squares-traversed (comprising-squares across-address)]
@@ -230,7 +234,8 @@
     puzzle
     (let [next-across-address (first-blank-across-address puzzle)]
       (some identity
-            (for [word (admissibles puzzle next-across-address)]
-              (solve-puzzle (write-wordspan puzzle
-                                            next-across-address
-                                            word)))))))
+            (let [admissible-words (admissibles puzzle next-across-address)]
+              (for [word admissible-words]
+                (solve-puzzle (write-wordspan puzzle
+                                              next-across-address
+                                              word))))))))

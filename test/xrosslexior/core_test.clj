@@ -57,6 +57,21 @@
   (is (= (containing-address-down my-sample-puzzle [3 0])
          (->WordspanAddress [3 0] :down 1))))
 
+(deftest test-first-blank-across-address
+  (let [our-puzzle (empty-square-grid 3)]
+    (is (= (first-blank-across-address our-puzzle)
+           (->WordspanAddress [0 0] :across 3)))
+    (is (= (first-blank-across-address
+            (write-wordspan our-puzzle
+                            (first-blank-across-address our-puzzle)
+                            [:B :I :T]))
+           (->WordspanAddress [1 0] :across 3)))))
+
+(deftest test-blank-address-detection
+  (let [our-puzzle [[nil :A] [nil nil]]]
+    (is (not (blank-address? our-puzzle (->WordspanAddress [0 0] :across 2))))
+    (is (blank-address? our-puzzle (->WordspanAddress [1 0] :across 2)))))
+
 (deftest test-down-addresses-athwart-across
   (is (= (down-addresses-athwart-across my-sample-puzzle
                                         (->WordspanAddress [3 0] :across 4))
