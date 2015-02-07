@@ -230,8 +230,8 @@
   (filter (n-dictionary (:length across-address))
           (down-prefix-admissibles puzzle across-address)))
 
-(defn solve-puzzle [puzzle & spy]
-  (when (seq spy)
+(defn solve-puzzle [puzzle & {:keys [spy]}]
+  (when spy
     (println "spying ...")
     (display-puzzle puzzle))
   (if (full? puzzle)
@@ -242,4 +242,4 @@
               (for [word admissible-words]
                 (solve-puzzle (write-wordspan puzzle
                                               next-across-address
-                                              word))))))))
+                                              word) :spy spy)))))))
