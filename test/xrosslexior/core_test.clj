@@ -49,6 +49,11 @@
           [:I :J :K :L]
           [:█ :█ :M :N]])))
 
+(deftest test-wordspan-addresses-across
+  (is (= (wordspan-addresses-across my-sample-puzzle)
+         (map #(->WordspanAddress (first %) :across (second %))
+              [[[0 0] 3] [[1 0] 3] [[2 1] 2] [[3 0] 4] [[4 2] 2]]))))
+
 (deftest test-containing-address-down
   (is (= (containing-address-down my-sample-puzzle [3 1])
          (->WordspanAddress [0 1] :down 4)))

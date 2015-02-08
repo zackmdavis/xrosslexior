@@ -162,21 +162,20 @@
 (defn wordspan-addresses-across [puzzle]
   (apply
    concat
-   (for [[row-index row] (enumerate (rows puzzle))
-         :let [partitioned (partition-by #(not= :█ %) row)]]
-     ((reduce (fn [{:keys [addresses col-counter] :as reductor} partition]
-                (if (= (first partition) :█)
-                  (assoc reductor
-                         :col-counter (+ col-counter (count partition)))
-                  (let [new-address (->WordspanAddress [row-index col-counter]
-                                                       :across
-                                                       (count partition))]
-                    (assoc reductor
-                           :addresses (conj addresses new-address)
-                           :col-counter (+ col-counter (count partition))))))
-              {:addresses [] :col-counter 0}
-              partitioned)
-      :addresses))))
+   (for [[row-index indexed-row] (enumerate (map #(enumerate %) (rows puzzle)))
+         :let [partitioned (partition-by (fn [[col-index value]]
+                                           (not= :█ value))
+                                         indexed-row)]]
+     (filter
+      identity
+      (map (fn [subspan]
+             (let [[opening-col-index opening-value] (first subspan)]
+               (if (not= opening-value :█)
+                 (->WordspanAddress [row-index opening-col-index]
+                                    :across
+                                    (count subspan))
+                 nil)))
+           partitioned)))))
 
 ;; XXX utterly contemptible in its surely unnecessary complexity,
 ;; perhaps not implausibly the worst function I have ever written
