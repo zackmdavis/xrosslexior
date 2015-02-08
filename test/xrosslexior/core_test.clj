@@ -19,6 +19,12 @@
    [:I :J :K :L]
    [:█ :█ :M :N]])
 
+(deftest test-spans
+  (is (= (count (spans my-sample-puzzle)) 9))
+  (is (= (count (spans my-sample-puzzle :across)) 5))
+  (is (= (first (spans my-sample-puzzle :down))
+         [:A :D :█ :I :█])))
+
 (deftest test-comprising-squares
   (is (= (comprising-squares (->WordspanAddress [0 0] :across 3))
          [[0 0] [0 1] [0 2]]))
@@ -51,8 +57,15 @@
 
 (deftest test-wordspan-addresses-across
   (is (= (wordspan-addresses-across my-sample-puzzle)
-         (map #(->WordspanAddress (first %) :across (second %))
+         (map (fn [[location length]]
+                (->WordspanAddress location :across length))
               [[[0 0] 3] [[1 0] 3] [[2 1] 2] [[3 0] 4] [[4 2] 2]]))))
+
+(deftest test-wordspan-addresses-down
+  (is (= (wordspan-addresses-down my-sample-puzzle)
+         (map (fn [[location length]]
+                (->WordspanAddress location :down length))
+              [[[0 0] 2] [[3 0] 1] [[0 1] 4] [[0 2] 5] [[3 3] 2]]))))
 
 (deftest test-containing-address-down
   (is (= (containing-address-down my-sample-puzzle [3 1])

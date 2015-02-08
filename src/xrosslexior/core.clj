@@ -41,6 +41,10 @@
          (first coordinates)
          (assoc (grid (first coordinates)) (second coordinates) letter)))
 
+(defn other [oriented]
+  (cond :across :down
+        :down :across))
+
 (defn read-row [grid row]
   (grid row))
 
@@ -65,8 +69,14 @@
   (for [j (range (count (first grid)))]
                (read-col grid j)))
 
-(defn spans [grid]
-  (concat (rows grid) (cols grid)))
+(defn spans
+  ([grid] (concat (rows grid) (cols grid)))
+  ([grid orientation] (condp = orientation
+                        :across (rows grid)
+                        :down (cols grid))))
+
+(defn map->location [{:keys [row col]}]
+  [row col])
 
 (defrecord WordspanAddress [start orientation length])
 
@@ -148,34 +158,47 @@
       (println (formatter (map #(if ((complement nil?) %) (name %) " ")
                                row))))))
 
-;; XXX TODO: unify these
-(defn clear-across-length [puzzle [row start-col]]
-  (let [clear-span (take-while #(not= :█ %)
-                               (drop start-col (read-row puzzle row)))]
+(defn clear-oriented-length [puzzle location orientation]
+  (let [[span-index counter-index] (condp = orientation
+                                     :across location
+                                     :down (reverse location))
+        span-selector (condp = orientation
+                        :across read-row
+                        :down read-col)
+        clear-span (take-while #(not= :█ %)
+                               (drop counter-index
+                                     (span-selector puzzle span-index)))]
     (count clear-span)))
 
-(defn clear-down-length [puzzle [start-row col]]
-  (let [clear-span (take-while #(not= :█ %)
-                               (drop start-row (read-col puzzle col)))]
-    (count clear-span)))
-
-(defn wordspan-addresses-across [puzzle]
+(defn wordspan-addresses-oriented [puzzle orientation]
   (apply
    concat
-   (for [[row-index indexed-row] (enumerate (map #(enumerate %) (rows puzzle)))
-         :let [partitioned (partition-by (fn [[col-index value]]
+   (for [[span-index indexed-span] (enumerate (map #(enumerate %)
+                                                   (spans puzzle orientation)))
+         :let [partitioned (partition-by (fn [[counter-index value]]
                                            (not= :█ value))
-                                         indexed-row)]]
+                                         indexed-span)]]
      (filter
       identity
       (map (fn [subspan]
-             (let [[opening-col-index opening-value] (first subspan)]
+             (let [[opening-counter-index opening-value] (first subspan)
+                   [row-index col-index] (condp = orientation
+                                           :across [span-index
+                                                    opening-counter-index]
+                                           :down [opening-counter-index
+                                                  span-index])]
                (if (not= opening-value :█)
-                 (->WordspanAddress [row-index opening-col-index]
-                                    :across
+                 (->WordspanAddress [row-index col-index]
+                                    orientation
                                     (count subspan))
                  nil)))
            partitioned)))))
+
+(defn wordspan-addresses-across [puzzle]
+  (wordspan-addresses-oriented puzzle :across))
+
+(defn wordspan-addresses-down [puzzle]
+  (wordspan-addresses-oriented puzzle :down))
 
 ;; XXX utterly contemptible in its surely unnecessary complexity,
 ;; perhaps not implausibly the worst function I have ever written
