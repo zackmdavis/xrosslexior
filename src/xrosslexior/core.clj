@@ -41,9 +41,13 @@
          (first coordinates)
          (assoc (grid (first coordinates)) (second coordinates) letter)))
 
-(defn other [oriented]
-  (cond :across :down
-        :down :across))
+(def other
+  {:across :down
+   :down :across})
+
+(def orientation-to-span-type
+  {:across :row
+   :down :col})
 
 (defn read-row [grid row]
   (grid row))
@@ -58,6 +62,11 @@
   (reduce (fn [state row] (write state [row col] (nth word row)))
           grid
           (range (count word))))
+
+(defn read-span [puzzle index orientation]
+  (condp = orientation
+    :across (read-row puzzle index)
+    :down (read-col puzzle index)))
 
 (defn write-square [puzzle row col occupant]
   (assoc puzzle row (assoc (read-row puzzle row) col occupant)))
@@ -77,6 +86,9 @@
 
 (defn map->location [{:keys [row col]}]
   [row col])
+
+(defn location-as-map [[row col]]
+  {:row row :col col})
 
 (defrecord WordspanAddress [start orientation length])
 
@@ -170,6 +182,7 @@
                                      (span-selector puzzle span-index)))]
     (count clear-span)))
 
+
 (defn wordspan-addresses-oriented [puzzle orientation]
   (apply
    concat
@@ -200,32 +213,32 @@
 (defn wordspan-addresses-down [puzzle]
   (wordspan-addresses-oriented puzzle :down))
 
-;; XXX utterly contemptible in its surely unnecessary complexity,
-;; perhaps not implausibly the worst function I have ever written
-(defn containing-address-down [puzzle [row-i col-j]]
-  (let [col (read-col puzzle col-j)
-        partitioned (partition-by #(not= :█ %) col)
-        count-reductor
-        (reductions (fn [{:keys [addresses row-counter] :as reductor} partn]
-                      (if (= (first partn) :█)
-                        (assoc reductor
-                               :addresses (conj addresses nil)
-                               :row-counter (+ row-counter (count partn)))
-                        (let
-                            [new-address (->WordspanAddress [row-counter col-j]
-                                                            :down
-                                                            (count partn))]
-                          (assoc reductor
-                                 :addresses (conj addresses new-address)
-                                 :row-counter (+ row-counter (count partn))))))
-                      {:addresses [] :row-counter 0}
-                      partitioned)]
-    (last ((first (filter #(and (not (nil? (last (% :addresses))))
-                                (and (<= (first (:start (last (% :addresses))))
-                                         row-i)
-                              (< row-i (% :row-counter))))
-                          count-reductor))
-           :addresses))))
+(defn containing-address-oriented [puzzle location orientation]
+  (let [[span-index counter-index] (condp = orientation
+                                     :across location
+                                     :down (reverse location))
+        containing-span (read-span puzzle span-index orientation)
+        candidate-addresses (filter
+                             (fn [address]
+                               (= span-index
+                                  ((location-as-map (:start address))
+                                   (orientation-to-span-type orientation))))
+                             (wordspan-addresses-oriented puzzle orientation))]
+    (some (fn [address]
+            (let [counter-start ((location-as-map (:start address))
+                                 (orientation-to-span-type
+                                  (other orientation)))]
+              (if (<= counter-start counter-index (+ counter-start
+                                                     (:length address)))
+                address
+                nil)))
+          candidate-addresses)))
+
+(defn containing-address-down [puzzle location]
+  (containing-address-oriented puzzle location :down))
+
+(defn containing-address-across [puzzle location]
+  (containing-address-oriented puzzle location :across))
 
 (defn blank-address? [puzzle addresss]
   (let [wordspan (read-wordspan puzzle addresss)]
