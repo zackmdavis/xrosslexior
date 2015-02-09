@@ -252,20 +252,32 @@
   (let [squares-traversed (comprising-squares across-address)]
     (map #(containing-address-down puzzle %) squares-traversed)))
 
-(defn down-prefix-admissibles [puzzle across-address]
+(defn down-prefix-admissibles [puzzle across-address & {:keys [used]
+                                                        :or {used #{}}}]
   (let [down-addresses (down-addresses-athwart-across puzzle across-address)
         down-wordspans (map #(read-wordspan puzzle %) down-addresses)
         prefixes (map #(filter identity %) down-wordspans)
-        trees (map #(letter-tree-search (n-prefix-tree (:length %1)) %2)
+        trees (map (fn [address prefix]
+                     (letter-tree-search (n-prefix-tree (:length address))
+                                         prefix))
                    down-addresses prefixes)
-        spot-admissibles (map #(keys (:children %)) trees)]
-    (apply cartesian-product spot-admissibles)))
+        spot-admissibles (map #(keys (:children %)) trees)
+        ;; a fairly ad hoc technique to avoid placing duplicate words
+        ;; in the orthogonal direction
+        spot-admissible-uniquelies ;\
+        (map-indexed
+         (fn [index admissibles]
+           (filter (fn [admissible]
+                     (not (used (conj (vec (nth prefixes index)) admissible))))
+                   admissibles))
+         spot-admissibles)]
+    (apply cartesian-product spot-admissible-uniquelies)))
 
-(defn admissibles [puzzle across-address]
+(defn admissibles [puzzle across-address & {:keys [used] :or {used #{}}}]
   (filter (n-dictionary (:length across-address))
-          (down-prefix-admissibles puzzle across-address)))
+          (down-prefix-admissibles puzzle across-address :used used)))
 
-(defn solve-puzzle [puzzle & {:keys [spy]}]
+(defn solve-puzzle [puzzle & {:keys [used spy] :or {used #{} spy false}}]
   (when spy
     (println "spying ...")
     (display-puzzle puzzle))
@@ -273,8 +285,8 @@
     puzzle
     (let [next-across-address (first-blank-across-address puzzle)]
       (some identity
-            (let [admissible-words (admissibles puzzle next-across-address)]
+            (let [admissible-words (admissibles puzzle next-across-address
+                                                :used used)]
               (for [word admissible-words]
-                (solve-puzzle (write-wordspan puzzle
-                                              next-across-address
-                                              word) :spy spy)))))))
+                (solve-puzzle (write-wordspan puzzle next-across-address word)
+                              :spy spy :used (conj used word))))))))
