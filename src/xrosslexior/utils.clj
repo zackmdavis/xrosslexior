@@ -6,6 +6,9 @@
 (defn enumerate [sequence]
   (map-indexed vector sequence))
 
+(defn enumerate-from-one [sequence]
+  (map-indexed #(vector (inc %1) %2) sequence))
+
 (defn zip [& seqs]
   (apply map vector seqs))
 

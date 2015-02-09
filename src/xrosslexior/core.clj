@@ -167,8 +167,14 @@
 (defn display-puzzle [puzzle & condensed?]
   (let [formatter (if condensed? clojure.string/join vec)]
     (doseq [row puzzle]
-      (println (formatter (map #(if ((complement nil?) %) (name %) " ")
-                               row))))))
+      (println (formatter ;(map #(if ((complement nil?) %) (name %) " ")
+                (map (fn [value] (condp = (type value)
+                                   nil "  "
+                                   java.lang.Long (format "%2d" value)
+                                   clojure.lang.Keyword (format " %s"
+                                                                (name value))))
+
+                     row))))))
 
 (defn clear-oriented-length [puzzle location orientation]
   (let [[span-index counter-index] (condp = orientation
@@ -212,6 +218,16 @@
 
 (defn wordspan-addresses-down [puzzle]
   (wordspan-addresses-oriented puzzle :down))
+
+(defn wordspan-addresses-all [puzzle]
+  (concat (wordspan-addresses-across puzzle) (wordspan-addresses-down puzzle)))
+
+(defn impose-numbering [puzzle]
+  (let [start-locations (sort (vec (set (map #(:start %) all-addresses))))]
+    (reduce (fn [puzzle-state [clue-index start-location]]
+              (write puzzle-state start-location clue-index))
+            puzzle
+            (enumerate-from-one start-locations))))
 
 (defn containing-address-oriented [puzzle location orientation]
   (let [[span-index counter-index] (condp = orientation
