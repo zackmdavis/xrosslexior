@@ -273,20 +273,33 @@
          spot-admissibles)]
     (apply cartesian-product spot-admissible-uniquelies)))
 
-(defn admissibles [puzzle across-address & {:keys [used] :or {used #{}}}]
-  (filter (n-dictionary (:length across-address))
-          (down-prefix-admissibles puzzle across-address :used used)))
+(defn admissibles [puzzle across-address & {:keys [used diagnostic]
+                                            :or {used #{} diagnostic false}}]
+  (let [words-fitting-across (n-dictionary (:length across-address))
+        strings-admissible-down (down-prefix-admissibles puzzle across-address
+                                                       :used used)]
+    (when diagnostic
+      (println {:words-fitting-across (count words-fitting-across)
+                :strings-admissible-down (count strings-admissible-down)}))
+  (filter words-fitting-across
+          strings-admissible-down)))
 
-(defn solve-puzzle [puzzle & {:keys [used spy] :or {used #{} spy false}}]
-  (when spy
+(defn solve-puzzle [puzzle & {:keys [used spy diagnose-admissibles]
+                              :or {used #{} spy false
+                                   diagnose-admissibles false}}]
+  (when (or (and (= (type spy) java.lang.Double) (< (rand) spy))
+            (= spy true))
     (println "spying ...")
     (display-puzzle puzzle))
   (if (full? puzzle)
     puzzle
     (let [next-across-address (first-blank-across-address puzzle)]
       (some identity
-            (let [admissible-words (admissibles puzzle next-across-address
-                                                :used used)]
+            (let [admissible-words
+                  (admissibles puzzle next-across-address
+                               :used used
+                               :diagnostic diagnose-admissibles)]
               (for [word admissible-words]
                 (solve-puzzle (write-wordspan puzzle next-across-address word)
-                              :spy spy :used (conj used word))))))))
+                              :spy spy :used (conj used word)
+                              :diagnose-admissibles diagnose-admissibles)))))))
