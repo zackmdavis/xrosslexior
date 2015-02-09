@@ -21,8 +21,12 @@
 (defn letter-tree-builder [letter postfixes]
   (->LetterTreeNode
    letter
-   (map-comprehension [[i postfix-group] (partition-by-initial postfixes)]
-     [i (letter-tree-builder i (map rest postfix-group))])))
+   ;; (into-sorted-map-by-fn-of-values
+   ;;  #(- (count (:children %)))
+    (map-comprehension [[i postfix-group] (partition-by-initial postfixes)]
+      [i (letter-tree-builder i (map rest postfix-group))])
+;; )
+))
 
 (defn build-letter-tree [words]
   (letter-tree-builder nil words))

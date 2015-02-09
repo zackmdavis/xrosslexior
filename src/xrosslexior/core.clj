@@ -281,7 +281,7 @@
     (when diagnostic
       (println {:words-fitting-across (count words-fitting-across)
                 :strings-admissible-down (count strings-admissible-down)}))
-  (filter words-fitting-across
+  (filter (set (filter #(not (used %)) words-fitting-across))
           strings-admissible-down)))
 
 (defn solve-puzzle [puzzle & {:keys [used spy diagnose-admissibles]
