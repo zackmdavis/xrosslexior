@@ -67,6 +67,14 @@
                 (->WordspanAddress location :down length))
               [[[0 0] 2] [[3 0] 1] [[0 1] 4] [[0 2] 5] [[3 3] 2]]))))
 
+(deftest test-impose-numbering
+  (is (= (impose-numbering my-sample-puzzle)
+         [[ 1  2  3 :█]
+          [ 4 :E :F :█]
+          [:█  5 :H :█]
+          [ 6 :J :K  7]
+          [:█ :█  8 :N]])))
+
 (deftest test-containing-address-down
   (is (= (containing-address-down my-sample-puzzle [3 1])
          (->WordspanAddress [0 1] :down 4)))

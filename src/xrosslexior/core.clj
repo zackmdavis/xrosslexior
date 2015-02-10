@@ -223,7 +223,9 @@
   (concat (wordspan-addresses-across puzzle) (wordspan-addresses-down puzzle)))
 
 (defn impose-numbering [puzzle]
-  (let [start-locations (sort (vec (set (map #(:start %) all-addresses))))]
+  (let [start-locations (->> puzzle
+                             (wordspan-addresses-all) (map #(:start %))
+                             (set) (sort))]
     (reduce (fn [puzzle-state [clue-index start-location]]
               (write puzzle-state start-location clue-index))
             puzzle
