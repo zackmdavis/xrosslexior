@@ -1,0 +1,21 @@
+.row {
+    font-size: 0px;
+}
+
+.square {
+    font-size: 11px;
+    width: 30px;
+    height: 30px;
+    border: solid;
+    border-width: 1px;
+    display: inline-block;
+}
+
+.clue-index {
+    float: left;
+    padding: 2px;
+}
+
+.barrier {
+    background-color: #000000;
+}
