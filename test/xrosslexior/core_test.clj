@@ -38,7 +38,7 @@
          [:B :E :G :J])))
 
 (deftest test-square-writability
-  (is (= (write-square (write-square my-sample-puzzle 0 0 :X) 1 1 :Y)
+  (is (= (write (write my-sample-puzzle [0 0] :X) [1 1] :Y)
          [[:X :B :C :█]
           [:D :Y :F :█]
           [:█ :G :H :█]

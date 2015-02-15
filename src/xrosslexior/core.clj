@@ -37,9 +37,7 @@
   ((grid (first coordinates)) (second coordinates)))
 
 (defn write [grid coordinates letter]
-  (assoc grid
-         (first coordinates)
-         (assoc (grid (first coordinates)) (second coordinates) letter)))
+  (assoc-in grid coordinates letter))
 
 (def other
   {:across :down
@@ -67,9 +65,6 @@
   (condp = orientation
     :across (read-row puzzle index)
     :down (read-col puzzle index)))
-
-(defn write-square [puzzle row col occupant]
-  (assoc puzzle row (assoc (read-row puzzle row) col occupant)))
 
 (defn rows [grid]
   (lazy-seq grid))
@@ -116,7 +111,7 @@
         [start-row start-col] start]
     (reduce (fn [state [square-to-write letter-to-write]]
               (let [[row col] square-to-write]
-                (write-square state row col letter-to-write)))
+                (write state [row col] letter-to-write)))
             puzzle
             (for [[square letter] (zip (comprising-squares address) word)]
               [square letter]))))
