@@ -162,7 +162,7 @@
 (defn display-puzzle [puzzle & condensed?]
   (let [formatter (if condensed? clojure.string/join vec)]
     (doseq [row puzzle]
-      (println (formatter ;(map #(if ((complement nil?) %) (name %) " ")
+      (println (formatter
                 (map (fn [value] (condp = (type value)
                                    nil "  "
                                    java.lang.Long (format "%2d" value)

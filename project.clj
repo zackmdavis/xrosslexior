@@ -5,5 +5,6 @@
             :url "http://opensource.org/licenses/MIT"}
   :main xrosslexior.core
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/math.combinatorics "0.0.8"]]
+                 [org.clojure/math.combinatorics "0.0.8"]
+                 [hiccup "1.0.5"]]
   :plugins [[com.jakemccrary/lein-test-refresh "0.5.0"]])
