@@ -116,6 +116,12 @@
             (for [[square letter] (zip (comprising-squares address) word)]
               [square letter]))))
 
+(defn write-barriers [grid locations]
+  (reduce (fn [state location]
+            (write state location black-square))
+          grid
+          locations))
+
 (defn solved? [grid]
   (every? identity
           (for [span (spans grid)]
