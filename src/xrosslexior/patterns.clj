@@ -1,5 +1,13 @@
 (ns xrosslexior.patterns)
 
+(def smaller-barriered-pattern [[nil nil nil :█  nil nil nil]
+                                [nil nil nil :█  nil nil nil]
+                                [nil nil nil :█  nil nil nil]
+                                [nil nil nil nil nil nil nil]
+                                [:█  nil nil nil nil nil :█ ]
+                                [:█  nil nil nil nil nil :█ ]
+                                [:█  :█  nil nil nil :█  :█ ]])
+
 
 (def seven-eleven-pattern  [[nil nil nil nil nil :█  nil nil nil nil nil]
                             [nil nil nil nil nil :█  nil nil nil nil nil]
