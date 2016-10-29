@@ -24,6 +24,16 @@ impl WordspanAddress {
             length: length
         }
     }
+
+    pub fn oriented_new(start_this: usize, start_cross: usize,
+                        orientation: Orientation, length: usize) -> Self {
+        match orientation {
+            Orientation::Across => WordspanAddress::new(
+                start_this, start_cross, orientation, length),
+            Orientation::Down => WordspanAddress::new(
+                start_cross, start_this, orientation, length)
+        }
+    }
 }
 
 pub const BARRIER: char = '█';
@@ -39,6 +49,14 @@ pub struct Puzzle {
 impl Puzzle {
     pub fn read(&self, row_index: usize, col_index: usize) -> char {
         self.backing[self.cols*row_index + col_index]
+    }
+
+    pub fn oriented_read(&self, orientation: Orientation,
+                         this: usize, cross: usize) -> char {
+        match orientation {
+            Orientation::Across => self.read(this, cross),
+            Orientation::Down => self.read(cross, this)
+        }
     }
 
     pub fn write(&mut self, row_index: usize, col_index: usize,
@@ -75,24 +93,31 @@ impl Puzzle {
         }
     }
 
-    fn wordspan_addresses_across(&self) -> Vec<WordspanAddress> {
+    pub fn oriented_wordspan_addresses(&self, orientation: Orientation)
+                                       -> Vec<WordspanAddress> {
         let mut addresses = Vec::new();
-        for row in 0..self.rows {
+        let (this_dimension, cross_dimension) = match orientation {
+            Orientation::Across => (self.rows, self.cols),
+            Orientation::Down => (self.cols, self.rows)
+        };
+        for beam in 0..this_dimension {
             let mut open_word_from: Option<usize> = None;
-            for col in 0..self.cols {
+            for crossbeam in 0..cross_dimension {
                 match open_word_from {
                     None => {
-                        if self.read(row, col) == BARRIER {
+                        if self.oriented_read(orientation,
+                                              beam, crossbeam) == BARRIER {
                             continue;
                         } else {
-                            open_word_from = Some(col);
+                            open_word_from = Some(crossbeam);
                         }
                     },
                     Some(open_from) => {
-                        if self.read(row, col) == BARRIER {
-                            let address = WordspanAddress::new(
-                                row, open_from, Orientation::Across,
-                                col-open_from
+                        if self.oriented_read(orientation,
+                                              beam, crossbeam) == BARRIER {
+                            let address = WordspanAddress::oriented_new(
+                                beam, open_from, orientation,
+                                crossbeam-open_from
                             );
                             addresses.push(address);
                             open_word_from = None;
@@ -104,13 +129,19 @@ impl Puzzle {
             }
             // close off word closed by edge of puzzle rather than barrier
             if let Some(open_from) = open_word_from {
-                let address = WordspanAddress::new(
-                    row, open_from, Orientation::Across,
-                    self.cols-open_from
+                let address = WordspanAddress::oriented_new(
+                    beam, open_from, orientation,
+                    cross_dimension-open_from
                 );
                 addresses.push(address);
             }
         }
+        addresses
+    }
+
+    pub fn wordspan_addresses(&self) -> Vec<WordspanAddress> {
+        let mut addresses = self.oriented_wordspan_addresses(Orientation::Across);
+        addresses.extend(self.oriented_wordspan_addresses(Orientation::Down));
         addresses
     }
 
@@ -194,7 +225,21 @@ mod tests {
               WordspanAddress::new(1, 6, Orientation::Across, 5),
               WordspanAddress::new(2, 0, Orientation::Across, 4),
               WordspanAddress::new(2, 5, Orientation::Across, 6)],
-            &puzzle.wordspan_addresses_across()[..6]
+            &puzzle.oriented_wordspan_addresses(Orientation::Across)[..6]
+        );
+    }
+
+    #[test]
+    fn concerning_wordspan_addresses_down() {
+        let puzzle = test_puzzle_ii();
+        assert_eq!(
+            &[WordspanAddress::new(0, 0, Orientation::Down, 4),
+              WordspanAddress::new(0, 1, Orientation::Down, 6),
+              WordspanAddress::new(0, 2, Orientation::Down, 7),
+              WordspanAddress::new(0, 3, Orientation::Down, 3),
+              WordspanAddress::new(4, 3, Orientation::Down, 3),
+              WordspanAddress::new(0, 4, Orientation::Down, 2)],
+            &puzzle.oriented_wordspan_addresses(Orientation::Down)[..6]
         );
     }
 }
