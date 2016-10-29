@@ -8,26 +8,6 @@ use std::io::BufReader;
 
 use radix_trie::Trie;
 
-pub struct Lexicon {
-    trees: Vec<Trie<String, ()>>
-}
-
-impl Lexicon {
-    pub fn build(n: usize) -> Self {
-        let mut lexicon = Lexicon { trees: Vec::new() };
-        let dictionary = load_dictionary().expect("couldn't load dictionary");
-        for i in 0..n+1 {
-            lexicon.trees.push(compile_n_prefix_tree(&dictionary, i));
-        }
-        lexicon
-    }
-
-    pub fn contains(&self, word: &[char]) -> bool {
-        let key: String = word.iter().cloned().collect();
-        self.trees[key.len()].get(&key).is_some()
-    }
-}
-
 pub fn load_dictionary() -> Result<Vec<String>, io::Error> {
     let wordfile = try!(File::open("/usr/share/dict/words"));
     let wordreader = BufReader::new(wordfile);
@@ -42,11 +22,34 @@ pub fn load_dictionary() -> Result<Vec<String>, io::Error> {
     Ok(wordlist)
 }
 
+lazy_static! {
+    static ref DICTIONARY: Vec<String> = load_dictionary()
+        .expect("couldn't load dictionary");
+}
 
-pub fn compile_n_prefix_tree(dictionary: &[String], n: usize)
-                             -> Trie<String, ()> {
+
+pub struct Lexicon {
+    trees: Vec<Trie<String, ()>>
+}
+
+impl Lexicon {
+    pub fn build(n: usize) -> Self {
+        let mut lexicon = Lexicon { trees: Vec::new() };
+        for i in 0..n+1 {
+            lexicon.trees.push(compile_n_prefix_tree(i));
+        }
+        lexicon
+    }
+
+    pub fn contains(&self, word: &[char]) -> bool {
+        let key: String = word.iter().cloned().collect();
+        self.trees[key.len()].get(&key).is_some()
+    }
+}
+
+pub fn compile_n_prefix_tree(n: usize) -> Trie<String, ()> {
     let mut tree = Trie::new();
-    for word in dictionary {
+    for word in DICTIONARY.iter() {
         if word.len() != n {
             continue;
         }
@@ -60,21 +63,20 @@ pub fn compile_n_prefix_tree(dictionary: &[String], n: usize)
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::DICTIONARY;
 
     #[test]
     fn concerning_loading_our_dictionary() {
-        let dictionary = load_dictionary().expect("couldn't load dictionary");
         // Probably some systems will have a different /usr/share/dict/words.
         // Works on my machine!
         assert_eq!(vec!["A", "AOL", "Aachen", "Aaliyah", "Aaron", "Abbas",
                         "Abbasid", "Abbott", "Abby", "Abdul"],
-                   dictionary[..10].to_vec());
+                   DICTIONARY[..10].to_vec());
     }
 
     #[test]
     fn concerning_compiling_prefix_trees() {
-        let dictionary = load_dictionary().expect("couldn't load dictionary");
-        let tree = compile_n_prefix_tree(&dictionary, 6);
+        let tree = compile_n_prefix_tree(6);
         assert_eq!(vec!["AACHEN", "ABACUS", "ABASED", "ABASES", "ABATED"],
                    tree.keys().take(5).collect::<Vec<_>>());
     }

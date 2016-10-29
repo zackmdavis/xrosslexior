@@ -2,8 +2,14 @@
 name = "xrosslexiord"
 version = "0.0.1"
 dependencies = [
+ "lazy_static 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "radix_trie 0.0.9 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "lazy_static"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "nibble_vec"
@@ -19,5 +25,6 @@ dependencies = [
 ]
 
 [metadata]
+"checksum lazy_static 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "49247ec2a285bb3dcb23cbd9c35193c025e7251bfce77c1d5da97e6362dffe7f"
 "checksum nibble_vec 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "62e678237a4c70c5f2b917cefd7d080dfbf800421f06e8a59d4e28ef5130fd9e"
 "checksum radix_trie 0.0.9 (registry+https://github.com/rust-lang/crates.io-index)" = "8d2bfd80b28325215b837fc9459a49f632a80e52d9b134934160d586e4803dff"

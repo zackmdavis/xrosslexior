@@ -1,3 +1,4 @@
+#[macro_use] extern crate lazy_static;
 extern crate radix_trie;
 
 #[macro_use] mod macros;
