@@ -1,3 +1,5 @@
+extern crate radix_trie;
+
 mod lexicon;
 mod puzzle;
 
