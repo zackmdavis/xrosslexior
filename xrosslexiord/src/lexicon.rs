@@ -21,6 +21,11 @@ impl Lexicon {
         }
         lexicon
     }
+
+    pub fn contains(&self, word: &[char]) -> bool {
+        let key: String = word.iter().cloned().collect();
+        self.trees[key.len()].get(&key).is_some()
+    }
 }
 
 pub fn load_dictionary() -> Result<Vec<String>, io::Error> {

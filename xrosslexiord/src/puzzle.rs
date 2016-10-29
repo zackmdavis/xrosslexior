@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use lexicon::Lexicon;
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Orientation {
     Across,
@@ -60,7 +62,7 @@ impl Puzzle {
     }
 
     pub fn write(&mut self, row_index: usize, col_index: usize,
-             letter: char) {
+                 letter: char) {
         self.backing[self.cols*row_index + col_index] = letter;
     }
 
@@ -145,12 +147,23 @@ impl Puzzle {
         addresses
     }
 
+    pub fn is_solved(&self, lexicon: &Lexicon) -> bool {
+        for address in self.wordspan_addresses() {
+            let word = self.read_wordspan(address);
+            if !lexicon.contains(&word) {
+                return false;
+            }
+        }
+        true
+    }
+
 }
 
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use lexicon::Lexicon;
 
     fn test_puzzle_i() -> Puzzle {
         Puzzle {
@@ -242,4 +255,16 @@ mod tests {
             &puzzle.oriented_wordspan_addresses(Orientation::Down)[..6]
         );
     }
+
+    #[test]
+    fn concerning_is_solved() {
+        let lexicon = Lexicon::build(7);
+        let puzzles = vec![test_puzzle_i(), test_puzzle_ii()];
+        for mut puzzle in puzzles {
+            assert!(puzzle.is_solved(&lexicon));
+            puzzle.write(0, 0, 'Q');
+            assert!(!puzzle.is_solved(&lexicon));
+        }
+    }
+
 }
