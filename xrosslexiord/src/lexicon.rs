@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::ascii::AsciiExt;
 use std::fs::File;
 use std::io;
@@ -5,6 +7,21 @@ use std::io::prelude::*;
 use std::io::BufReader;
 
 use radix_trie::Trie;
+
+pub struct Lexicon {
+    trees: Vec<Trie<String, ()>>
+}
+
+impl Lexicon {
+    pub fn build(n: usize) -> Self {
+        let mut lexicon = Lexicon { trees: Vec::new() };
+        let dictionary = load_dictionary().expect("couldn't load dictionary");
+        for i in 0..n+1 {
+            lexicon.trees.push(compile_n_prefix_tree(&dictionary, i));
+        }
+        lexicon
+    }
+}
 
 pub fn load_dictionary() -> Result<Vec<String>, io::Error> {
     let wordfile = try!(File::open("/usr/share/dict/words"));
