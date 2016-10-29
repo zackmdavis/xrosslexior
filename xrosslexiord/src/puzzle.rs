@@ -43,6 +43,9 @@ impl Puzzle {
         self.backing[self.cols*row_index + col_index] = letter;
     }
 
+    // XXX: returning a Vec<_> implies an allocation, but we can't return a
+    // slice because the Down case isn't contiguous. Can we return a
+    // Cow<[char]>? Profile and decide later
     pub fn read_wordspan(&self, address: WordspanAddress) -> Vec<char> {
         let start_square = self.cols*address.start_row + address.start_col;
         match address.orientation {
