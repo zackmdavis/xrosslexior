@@ -155,14 +155,14 @@ mod tests {
     fn concerning_read_wordspan_across() {
         let write_address = WordspanAddress::new(0, 0, Orientation::Across, 5);
         assert_eq!(test_puzzle_i().read_wordspan(write_address),
-                   vec!['W', 'R', 'I', 'T', 'E']);
+                   charvec![WRITE]);
     }
 
     #[test]
     fn concerning_read_wordspan_down() {
         let raise_address = WordspanAddress::new(0, 1, Orientation::Down, 5);
         assert_eq!(test_puzzle_i().read_wordspan(raise_address),
-                   vec!['R', 'A', 'I', 'S', 'E']);
+                   charvec![RAISE]);
     }
 
     #[test]
@@ -170,18 +170,18 @@ mod tests {
         let mut puzzle = test_puzzle_i();
         // in more ways than one
         let write_address = WordspanAddress::new(0, 0, Orientation::Across, 5);
-        puzzle.write_wordspan(write_address, vec!['P', 'L', 'A', 'T', 'E']);
+        puzzle.write_wordspan(write_address, charvec![PLATE]);
         assert_eq!(puzzle.read_wordspan(write_address),
-                   vec!['P', 'L', 'A', 'T', 'E']);
+                   charvec![PLATE]);
     }
 
     #[test]
     fn concerning_write_wordspan_down() {
         let mut puzzle = test_puzzle_i();
         let entry_address = WordspanAddress::new(0, 4, Orientation::Down, 5);
-        puzzle.write_wordspan(entry_address, vec!['F', 'A', 'I', 'T', 'H']);
+        puzzle.write_wordspan(entry_address, charvec![FAITH]);
         assert_eq!(puzzle.read_wordspan(entry_address),
-                   vec!['F', 'A', 'I', 'T', 'H']);
+                   charvec![FAITH]);
     }
 
     #[test]
