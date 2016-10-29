@@ -1,10 +1,12 @@
 #![allow(dead_code)]
 
+#[derive(Clone, Copy, Debug)]
 pub enum Orientation {
     Across,
     Down
 }
 
+#[derive(Clone, Copy, Debug)]
 pub struct WordspanAddress {
     start_row: usize,
     start_col: usize,
@@ -26,6 +28,7 @@ impl WordspanAddress {
 
 pub const BARRIER: char = '█';
 
+#[derive(Clone, Debug)]
 pub struct Puzzle {
     rows: usize,
     cols: usize,
@@ -60,9 +63,16 @@ impl Puzzle {
         }
     }
 
-    #[allow(unused_variables)]
     pub fn write_wordspan(&mut self, address: WordspanAddress, word: Vec<char>) {
-        // TODO
+        let start_square = self.cols*address.start_row + address.start_col;
+        let mut offset = 0;
+        for character in word {
+            self.backing[start_square + offset] = character;
+            offset += match address.orientation {
+                Orientation::Across => 1,
+                Orientation::Down => self.cols
+            }
+        }
     }
 
 }
@@ -87,17 +97,36 @@ mod tests {
     }
 
     #[test]
-    fn test_read_wordspan_across() {
+    fn concerning_read_wordspan_across() {
         let write_address = WordspanAddress::new(0, 0, Orientation::Across, 5);
         assert_eq!(test_puzzle().read_wordspan(write_address),
                    vec!['W', 'R', 'I', 'T', 'E']);
     }
 
     #[test]
-    fn test_read_wordspan_down() {
+    fn concerning_read_wordspan_down() {
         let raise_address = WordspanAddress::new(0, 1, Orientation::Down, 5);
         assert_eq!(test_puzzle().read_wordspan(raise_address),
                    vec!['R', 'A', 'I', 'S', 'E']);
+    }
+
+    #[test]
+    fn concerning_write_wordspan_across() {
+        let mut puzzle = test_puzzle();
+        // in more ways than one
+        let write_address = WordspanAddress::new(0, 0, Orientation::Across, 5);
+        puzzle.write_wordspan(write_address, vec!['P', 'L', 'A', 'T', 'E']);
+        assert_eq!(puzzle.read_wordspan(write_address),
+                   vec!['P', 'L', 'A', 'T', 'E']);
+    }
+
+    #[test]
+    fn concerning_write_wordspan_down() {
+        let mut puzzle = test_puzzle();
+        let entry_address = WordspanAddress::new(0, 4, Orientation::Down, 5);
+        puzzle.write_wordspan(entry_address, vec!['F', 'A', 'I', 'T', 'H']);
+        assert_eq!(puzzle.read_wordspan(entry_address),
+                   vec!['F', 'A', 'I', 'T', 'H']);
     }
 
 }
