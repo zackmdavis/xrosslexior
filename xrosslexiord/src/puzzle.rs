@@ -1,11 +1,30 @@
 #![allow(dead_code)]
 
+use std::collections::VecDeque;
+use std::iter::FromIterator;
+
 use lexicon::Lexicon;
+
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Orientation {
     Across,
     Down
+}
+
+impl Orientation {
+    pub fn reverse(&self) -> Self {
+        match *self {
+            Orientation::Across => Orientation::Down,
+            Orientation::Down => Orientation::Across
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct Locale {
+    row: usize,
+    col: usize
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -36,9 +55,39 @@ impl WordspanAddress {
                 start_cross, start_this, orientation, length)
         }
     }
+
+    pub fn encompassed_locales(&self) -> Vec<Locale> {
+        (0..self.length).map(|offset| {
+            match self.orientation {
+                Orientation::Across => Locale {
+                    row: self.start_row,
+                    col: self.start_col + offset
+                },
+                Orientation::Down => Locale {
+                    row: self.start_row + offset,
+                    col: self.start_col
+                }
+            }
+        }).collect()
+    }
 }
 
 pub const BARRIER: char = '█';
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CrossRequirement {
+    length: usize,
+    prefix: Vec<char>
+}
+
+impl CrossRequirement {
+    pub fn new(length: usize, prefix: Vec<char>) -> Self {
+        CrossRequirement {
+            length: length,
+            prefix: prefix,
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct Puzzle {
@@ -46,7 +95,6 @@ pub struct Puzzle {
     cols: usize,
     backing: Vec<char>
 }
-
 
 impl Puzzle {
     pub fn read(&self, row_index: usize, col_index: usize) -> char {
@@ -157,6 +205,26 @@ impl Puzzle {
         true
     }
 
+    pub fn gather_cross_requirements(&self, address: WordspanAddress)
+                                     -> Vec<CrossRequirement> {
+        let mut cross_requirements = Vec::new();
+        let mut our_locales = VecDeque::from_iter(
+            address.encompassed_locales().into_iter());
+        for cross_address in self.oriented_wordspan_addresses(
+                address.orientation.reverse()) {
+            if cross_address.encompassed_locales().contains(&our_locales[0]) {
+                our_locales.pop_front();
+                let requirement = CrossRequirement {
+                    length: cross_address.length,
+                    prefix: self.read_wordspan(cross_address).into_iter()
+                        .take_while(|c| *c != ' ').collect()
+                };
+                cross_requirements.push(requirement);
+            }
+        }
+        cross_requirements
+    }
+
 }
 
 
@@ -192,6 +260,20 @@ mod tests {
                 '█', 'A', 'R', 'E', 'S', '█', 'P', 'I', 'U', 'S', '█',
                 '█', '█', 'Y', 'I', 'P', '█', 'L', 'E', 'S', '█', '█',
             ]
+        }
+    }
+
+    fn test_puzzle_iii() -> Puzzle {
+        Puzzle {
+            rows: 5,
+            cols: 4,
+            backing: vec![
+                'Q', 'U', 'I', 'Z',
+                'U', 'N', 'D', 'O',
+                'A', 'I', 'L', 'S',
+                ' ', ' ', ' ', ' ', // ITEM
+                ' ', ' ', ' ', ' ', // LEDA (in case you were wondering)
+            ],
         }
     }
 
@@ -265,6 +347,19 @@ mod tests {
             puzzle.write(0, 0, 'Q');
             assert!(!puzzle.is_solved(&lexicon));
         }
+    }
+
+    #[test]
+    fn concerning_gathering_cross_requirements() {
+        assert_eq!(
+            vec![CrossRequirement::new(5, charvec![QUA]),
+                 CrossRequirement::new(5, charvec![UNI]),
+                 CrossRequirement::new(5, charvec![IDL]),
+                 CrossRequirement::new(5, charvec![ZOS])],
+            test_puzzle_iii()
+                .gather_cross_requirements(
+                    WordspanAddress::new(3, 0, Orientation::Across, 4))
+        );
     }
 
 }
