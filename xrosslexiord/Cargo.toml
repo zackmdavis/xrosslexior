@@ -1,0 +1,8 @@
+[package]
+name = "xrosslexiord"
+version = "0.0.1"
+authors = ["Zack M. Davis <code@zackmdavis.net>"]
+
+[dependencies]
+lazy_static = "0.2.1"
+radix_trie = "0.0.9"
