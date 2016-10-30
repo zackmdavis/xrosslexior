@@ -225,6 +225,9 @@ impl Puzzle {
         cross_requirements
     }
 
+    pub fn is_full(&self) -> bool {
+        self.backing.iter().all(|c| *c != ' ')
+    }
 }
 
 
@@ -362,4 +365,10 @@ mod tests {
         );
     }
 
+    #[test]
+    fn concerning_is_full() {
+        assert!(test_puzzle_i().is_full());
+        assert!(test_puzzle_ii().is_full());
+        assert!(!test_puzzle_iii().is_full());
+    }
 }
