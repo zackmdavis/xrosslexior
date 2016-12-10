@@ -81,4 +81,10 @@ mod tests {
                    tree.keys().take(5).collect::<Vec<_>>());
     }
 
+    #[test]
+    fn concerning_lexicon_lookup() {
+        let lexicon = Lexicon::build(3);
+        assert!(lexicon.contains(&['C', 'A', 'T']));
+    }
+
 }
