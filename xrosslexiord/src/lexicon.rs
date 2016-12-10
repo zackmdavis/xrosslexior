@@ -45,6 +45,10 @@ impl Lexicon {
         let key: String = word.iter().cloned().collect();
         self.trees[key.len()].get(&key).is_some()
     }
+
+    pub fn n_dictionary(&self, n: usize) -> Vec<String> {
+        return self.trees[n].keys().cloned().collect()
+    }
 }
 
 pub fn compile_n_prefix_tree(n: usize) -> Trie<String, ()> {
@@ -85,6 +89,13 @@ mod tests {
     fn concerning_lexicon_lookup() {
         let lexicon = Lexicon::build(3);
         assert!(lexicon.contains(&['C', 'A', 'T']));
+    }
+
+    #[test]
+    fn concerning_n_dictionaries() {
+        let lexicon = Lexicon::build(3);
+        assert_eq!(vec!["ABE", "ACE", "ACT", "ADA", "ADD"],
+                   lexicon.n_dictionary(3).iter().take(5).collect::<Vec<_>>());
     }
 
 }
