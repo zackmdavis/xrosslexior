@@ -228,6 +228,20 @@ impl Puzzle {
     pub fn is_full(&self) -> bool {
         self.backing.iter().all(|c| *c != ' ')
     }
+
+    fn first_blank_across_address(&self) -> Option<WordspanAddress> {
+        self.oriented_wordspan_addresses(Orientation::Across).into_iter()
+            .filter(|a| { self.read(a.start_row, a.start_col) == ' ' })
+            .next()
+    }
+
+    pub fn solve(&mut self, lexicon: &Lexicon) -> bool {
+        if self.is_full() && self.is_solved(lexicon) {
+            return true
+        }
+        // TODO
+        false
+    }
 }
 
 
@@ -370,5 +384,11 @@ mod tests {
         assert!(test_puzzle_i().is_full());
         assert!(test_puzzle_ii().is_full());
         assert!(!test_puzzle_iii().is_full());
+    }
+
+    #[test]
+    fn concerning_first_blank_across_address() {
+        assert_eq!(Some(WordspanAddress::new(3, 0, Orientation::Across, 4)),
+                   test_puzzle_iii().first_blank_across_address())
     }
 }
